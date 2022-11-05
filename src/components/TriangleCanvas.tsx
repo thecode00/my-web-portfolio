@@ -22,7 +22,6 @@ function TriangleCanvas() {
     if (!canvas) {
       return;
     }
-    const totalRect = 15;
     const dx = canvas.width / 5;
     const dy = canvas.height / 3;
     for (let i = 0; i < 3; i++) {
@@ -41,11 +40,18 @@ function TriangleCanvas() {
     if (!canvas) {
       return;
     }
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Default value is 1, Retina display is 2
+    const pixelRatio = window.devicePixelRatio;
+    canvas.width = window.innerWidth * pixelRatio;
+    canvas.height = window.innerHeight * pixelRatio;
     canvas.style.width = `${window.innerWidth}px`;
     canvas.style.height = `${window.innerHeight}px`;
-    console.log(window.innerWidth);
+    const ctx = contextRef.current;
+    if (!ctx) {
+      return;
+    }
+    ctx.scale(pixelRatio, pixelRatio);
+    console.log("Resize", canvas.width, canvas.height);
   };
 
   useEffect(() => {
@@ -61,6 +67,7 @@ function TriangleCanvas() {
     }
     contextRef.current = context;
     return () => {
+      // Prevent memory leak
       window.removeEventListener("resize", handleResize);
     };
   }, []);
