@@ -1,5 +1,6 @@
 import React from "react";
 import "./App.css";
+import AlphabetCanvas from "./components/AlphabetCanvas";
 import TriangleCanvas from "./components/TriangleCanvas";
 
 function App() {
@@ -19,7 +20,8 @@ function App() {
           Learn React
         </a>
       </header> */}
-      <TriangleCanvas />
+      {/* <TriangleCanvas /> */}
+      <AlphabetCanvas />
     </>
   );
 }
