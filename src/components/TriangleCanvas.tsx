@@ -59,13 +59,13 @@ function TriangleCanvas() {
     if (!canvas) {
       return;
     }
-    window.addEventListener("resize", handleResize);
-    handleResize();
     const context = canvas.getContext("2d");
     if (!context) {
       return;
     }
     contextRef.current = context;
+    window.addEventListener("resize", handleResize);
+    handleResize();
     return () => {
       // Prevent memory leak
       window.removeEventListener("resize", handleResize);
