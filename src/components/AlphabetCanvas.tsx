@@ -14,6 +14,7 @@ function AlphabetCanvas() {
     y: null,
     radius: 150,
   });
+  const particleArray: Particle[] = [];
 
   const handleResize = () => {
     const canvas = canvasRef.current;
@@ -31,14 +32,82 @@ function AlphabetCanvas() {
       return;
     }
     ctx.scale(pixelRatio, pixelRatio);
-    console.log("Resize", canvas.width, canvas.height);
+    console.log("Resize", canvas.width, canvas.height, pixelRatio);
+  };
+  class Particle {
+    x: number;
+    y: number;
+    size: number;
+    baseX: number;
+    baseY: number;
+    density: number;
+    constructor(x: number, y: number) {
+      this.x = x;
+      this.y = y;
+      this.size = 3;
+      this.baseX = this.x;
+      this.baseY = this.y;
+      this.density = Math.random() * 30 + 1;
+    }
+
+    draw = () => {
+      const ctx = contextRef.current;
+      if (!ctx) {
+        return;
+      }
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.fill();
+    };
+
+    update = () => {
+      const mouse = mouseRef.current;
+      if (!mouse) {
+        return;
+      }
+      let dx = mouse.x - this.x;
+      let dy = mouse.y - this.y;
+      let distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < 100) {
+        this.size = 20;
+      } else {
+        this.size = 3;
+      }
+    };
+  }
+
+  const init = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+    for (let i = 0; i < 100; i++) {
+      let x = Math.random() * canvas.width;
+      let y = Math.random() * canvas.height;
+      particleArray.push(new Particle(x, y));
+    }
+  };
+
+  const animate = () => {
+    const ctx = contextRef.current;
+    const canvas = canvasRef.current;
+    if (!ctx || !canvas) {
+      return;
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particleArray.length; i++) {
+      particleArray[i].draw();
+      particleArray[i].update();
+    }
+    requestAnimationFrame(animate);
   };
 
   useEffect(() => {
     window.addEventListener("mousemove", (event) => {
       mouseRef.current.x = event.x;
       mouseRef.current.y = event.y;
-      console.log(mouseRef.current);
     });
     const canvas = canvasRef.current;
     if (!canvas) {
@@ -51,6 +120,8 @@ function AlphabetCanvas() {
     contextRef.current = ctx;
     window.addEventListener("resize", handleResize);
     handleResize();
+    init();
+    animate();
     return () => {
       window.removeEventListener("resize", handleResize);
     };
