@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 interface mouse {
   x: any;
   y: any;
-  radius: 150;
+  radius: number;
 }
 
 function AlphabetCanvas() {
@@ -12,7 +12,7 @@ function AlphabetCanvas() {
   const mouseRef = useRef<mouse>({
     x: null,
     y: null,
-    radius: 150,
+    radius: 250,
   });
   const particleArray: Particle[] = [];
 
@@ -47,7 +47,7 @@ function AlphabetCanvas() {
       this.size = 3;
       this.baseX = this.x;
       this.baseY = this.y;
-      this.density = Math.random() * 30 + 1;
+      this.density = Math.random() * 100 + 30;
     }
 
     draw = () => {
@@ -70,8 +70,15 @@ function AlphabetCanvas() {
       let dx = mouse.x - this.x;
       let dy = mouse.y - this.y;
       let distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < 100) {
-        this.size = 20;
+      let forceDirectionX = dx / distance;
+      let forceDirectionY = dy / distance;
+      let maxDistance = mouse.radius;
+      let force = (maxDistance - distance) / maxDistance;
+      let directionX = forceDirectionX * force * this.density;
+      let directionY = forceDirectionY * force * this.density;
+      if (distance < mouse.radius) {
+        this.x -= directionX;
+        this.y -= directionY;
       } else {
         this.size = 3;
       }
