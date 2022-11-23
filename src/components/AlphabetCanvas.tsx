@@ -5,17 +5,21 @@ interface mouse {
   y: any;
   radius: number;
 }
-
+// TODO: Change screen size
 function AlphabetCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const mouseRef = useRef<mouse>({
     x: null,
     y: null,
-    radius: 250,
+    radius: 150,
   });
   const particleArray: Particle[] = [];
+  const textCoordinate = useRef<ImageData | null>(null);
+  const adjustX = 30;
+  const adjustY = -40;
 
+  // 화면크기수정 함수
   const handleResize = () => {
     const canvas = canvasRef.current;
     if (!canvas) {
@@ -47,7 +51,7 @@ function AlphabetCanvas() {
       this.size = 3;
       this.baseX = this.x;
       this.baseY = this.y;
-      this.density = Math.random() * 100 + 30;
+      this.density = Math.random() * 50 + 30;
     }
 
     draw = () => {
@@ -55,9 +59,11 @@ function AlphabetCanvas() {
       if (!ctx) {
         return;
       }
-      ctx.fillStyle = "red";
+      ctx.fillStyle = "white";
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      // ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.font = "15px Verdana";
+      ctx.fillText("A", this.x, this.y);
       ctx.closePath();
       ctx.fill();
     };
@@ -77,23 +83,68 @@ function AlphabetCanvas() {
       let directionX = forceDirectionX * force * this.density;
       let directionY = forceDirectionY * force * this.density;
       if (distance < mouse.radius) {
+        // 마우스가 근처에가면 퍼지는 코드
         this.x -= directionX;
         this.y -= directionY;
       } else {
-        this.size = 3;
+        // 처음위치로 돌아가게 하는 코드
+        if (this.x !== this.baseX) {
+          let dx = this.baseX - this.x;
+          this.x += dx / 10;
+        }
+        if (this.y !== this.baseY) {
+          let dy = this.baseY - this.y;
+          this.y += dy / 10;
+        }
       }
     };
   }
-
+  // 처음에 Particle들을 초기화하는 함수
   const init = () => {
     const canvas = canvasRef.current;
     if (!canvas) {
       return;
     }
-    for (let i = 0; i < 100; i++) {
-      let x = Math.random() * canvas.width;
-      let y = Math.random() * canvas.height;
-      particleArray.push(new Particle(x, y));
+    // for (let i = 0; i < 100; i++) {
+    //   let x = Math.random() * canvas.width;
+    //   let y = Math.random() * canvas.height;
+    //   particleArray.push(new Particle(x, y));
+    // }
+    const textCoord = textCoordinate.current;
+
+    if (textCoord) {
+      console.log(textCoord.data);
+      for (let y = 0, y2 = textCoord.height; y < y2; y++) {
+        for (let x = 0, x2 = textCoord.width; x < x2; x++) {
+          if (textCoord.data[y * 4 * textCoord.width + x * 4 + 3] > 128) {
+            let positionX = x + adjustX;
+            let positionY = y + adjustY;
+            particleArray.push(new Particle(positionX * 10, positionY * 10));
+          }
+        }
+      }
+    }
+  };
+
+  const connect = () => {
+    for (let i = 0; i < particleArray.length; i++) {
+      for (let j = i; j < particleArray.length; j++) {
+        let dx = particleArray[i].x - particleArray[j].x;
+        let dy = particleArray[i].y - particleArray[j].y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        const ctx = contextRef.current;
+        if (!ctx) {
+          return;
+        }
+        if (distance < 10) {
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(particleArray[i].x, particleArray[i].y);
+          ctx.lineTo(particleArray[j].x, particleArray[j].y);
+          ctx.stroke();
+        }
+      }
     }
   };
 
@@ -108,6 +159,7 @@ function AlphabetCanvas() {
       particleArray[i].draw();
       particleArray[i].update();
     }
+    connect();
     requestAnimationFrame(animate);
   };
 
@@ -129,6 +181,11 @@ function AlphabetCanvas() {
     handleResize();
     init();
     animate();
+    ctx.fillStyle = "white";
+    ctx.font = "30px Verdana";
+    ctx.fillText("Hello", 0, 100);
+    console.log("fint");
+    textCoordinate.current = ctx.getImageData(0, 0, 100, 100);
     return () => {
       window.removeEventListener("resize", handleResize);
     };
