@@ -1,0 +1,7 @@
+.joycon {
+  border-bottom-left-radius: 32px;
+  border-top-left-radius: 32px;
+  background-color: aquamarine;
+  width: 100%;
+  height: 100%;
+}

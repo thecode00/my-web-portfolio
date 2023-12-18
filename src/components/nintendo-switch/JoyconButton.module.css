@@ -1,0 +1,13 @@
+.button {
+  background-color: black;
+  color: white;
+  text-align: center;
+  align-content: center;
+}
+
+@media screen and (max-width: 30000px) {
+  .button {
+    width: 46px;
+    height: 46px;
+  }
+}
